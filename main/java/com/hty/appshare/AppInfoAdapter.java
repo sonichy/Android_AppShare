@@ -11,13 +11,14 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppInfoAdapter extends BaseAdapter implements Filterable{
+public class AppInfoAdapter extends BaseAdapter implements Filterable {
 
     Context context;
-    List<AppInfo> data,data0;
+    List<AppInfo> data, data0;
     MyFilter mFilter;
 
     public AppInfoAdapter(Context context, List<AppInfo> data) {
@@ -49,9 +50,9 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable{
             view = LayoutInflater.from(context).inflate(R.layout.item_app, null);
             holder = new ViewHolder(view);
             view.setTag(holder);
-        }else{
-            view = convertview ;
-            holder = (ViewHolder) convertview.getTag() ;
+        } else {
+            view = convertview;
+            holder = (ViewHolder) convertview.getTag();
         }
         AppInfo appInfo = (AppInfo) getItem(position);
         holder.appIcon.setImageDrawable(appInfo.getAppIcon());
@@ -79,26 +80,26 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable{
     }
 
     public Filter getFilter() {
-        if (mFilter ==null){
+        if (mFilter == null) {
             mFilter = new MyFilter();
         }
         return mFilter;
     }
 
     //我们需要定义一个过滤器的类来定义过滤规则
-    class MyFilter extends Filter{
+    class MyFilter extends Filter {
         // 在performFiltering(CharSequence charSequence)这个方法中定义过滤规则
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             //Log.e("Filter:", charSequence.toString());
             FilterResults result = new FilterResults();
             List<AppInfo> list;
-            if (TextUtils.isEmpty(charSequence)){   //当过滤的关键字为空的时候，我们则显示所有的数据
-                list  = data0;
-            }else { //否则把符合条件的数据对象添加到集合中
+            if (TextUtils.isEmpty(charSequence)) {   //当过滤的关键字为空的时候，我们则显示所有的数据
+                list = data0;
+            } else { //否则把符合条件的数据对象添加到集合中
                 list = new ArrayList<AppInfo>();
-                for (AppInfo appInfo:data0){
-                    if (appInfo.getPkgName().contains(charSequence) || appInfo.getAppLabel().contains(charSequence)){
+                for (AppInfo appInfo : data0) {
+                    if (appInfo.getPkgName().toLowerCase().contains(charSequence.toString().toLowerCase()) || appInfo.getAppLabel().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                         //Log.e("Filter:", appInfo.getPkgName());
                         list.add(appInfo);
                     }
@@ -112,12 +113,12 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable{
         // 在publishResults方法中通知适配器更新界面
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            data = (List<AppInfo>)filterResults.values;
+            data = (List<AppInfo>) filterResults.values;
             Log.e("publishResults:", filterResults.count + "");
-            if (filterResults.count>0) {
+            if (filterResults.count > 0) {
                 notifyDataSetChanged(); // 通知数据发生了改变
                 Log.e("publishResults", "notifyDataSetChanged");
-            }else {
+            } else {
                 notifyDataSetInvalidated(); // 通知数据失效
                 Log.e("publishResults", "notifyDataSetInvalidated");
             }

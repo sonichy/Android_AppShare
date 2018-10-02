@@ -6,8 +6,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="海天鹰应用分享"
         android:theme="@android:style/Theme.Holo">
-        <activity android:name="com.hty.appshare.MainActivity"
-                  android:windowSoftInputMode="stateHidden|adjustResize">
+        <activity
+            android:name=".MainActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

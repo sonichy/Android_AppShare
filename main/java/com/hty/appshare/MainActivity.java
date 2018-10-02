@@ -2,6 +2,7 @@ package com.hty.appshare;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -14,6 +15,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,6 +27,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,52 +37,49 @@ public class MainActivity extends Activity {
     ListView listView;
     AppInfoAdapter adapter;
     EditText editTextSearch;
+    ProgressDialog progressDialog;
+    List<PackageInfo> packages;
+    PackageManager PM;
+    List<AppInfo> listAppInfo = null;
+    int i = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView = (ListView) findViewById(R.id.listView);
         editTextSearch = (EditText) findViewById(R.id.editTextSearch);
-
-        PackageManager PM = getPackageManager();
-        List<PackageInfo> packages = PM.getInstalledPackages(0);
-        final List<AppInfo> listAppInfo = new ArrayList<AppInfo>();
-        for (PackageInfo packageInfo : packages) {
-            Drawable icon = packageInfo.applicationInfo.loadIcon(PM);   // 获得应用的图标
-            String appLabel = (String) packageInfo.applicationInfo.loadLabel(PM);   // 获得应用的Label
-            String pkgName = packageInfo.packageName;   // 获得应用的包名
-            String sourceDir = packageInfo.applicationInfo.sourceDir; // 获得应用的路径
-            File file = new File(sourceDir);    //获取到应用安装包大小
-            String pkgSize = Formatter.formatFileSize(this,file.length());
-            AppInfo appInfo = new AppInfo();
-            appInfo.setAppIcon(icon);
-            appInfo.setAppLabel(appLabel);
-            appInfo.setPkgName(pkgName);
-            appInfo.setSourceDir(sourceDir);
-            appInfo.setPkgSize(pkgSize);
-            listAppInfo.add(appInfo);
-        }
-
-        adapter = new AppInfoAdapter(this, listAppInfo);
-        listView.setAdapter(adapter);
+        listView = (ListView) findViewById(R.id.listView);
         listView.setTextFilterEnabled(true);    // 开启过滤
+
+        progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setTitle("读取应用列表");
+        //progressDialog.setMessage("正在加载中，请稍等......");
+        progressDialog.setCancelable(true);
+        progressDialog.setIndeterminate(false);
+        progressDialog.show();
+
+        PM = getPackageManager();
+        packages = PM.getInstalledPackages(0);
+        listAppInfo = new ArrayList<AppInfo>();
+        progressDialog.setMax(packages.size());
+        new Thread(t).start();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                String pkgName = ((TextView)view.findViewById(R.id.textViewPkgName)).getText().toString();
+                String pkgName = ((TextView) view.findViewById(R.id.textViewPkgName)).getText().toString();
                 Intent intent = new Intent();
                 intent = getPackageManager().getLaunchIntentForPackage(pkgName);
                 startActivity(intent);
             }
         });
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView adapter,View view,int position,long id) {
-                String appLabel = ((TextView)view.findViewById(R.id.textViewAppLabel)).getText().toString();
-                String sourceDir = ((TextView)view.findViewById(R.id.textViewSourceDir)).getText().toString();
+            public boolean onItemLongClick(AdapterView adapter, View view, int position, long id) {
+                String appLabel = ((TextView) view.findViewById(R.id.textViewAppLabel)).getText().toString();
+                String sourceDir = ((TextView) view.findViewById(R.id.textViewSourceDir)).getText().toString();
                 Log.e("souceDir", sourceDir);
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_SEND);
@@ -111,7 +112,6 @@ public class MainActivity extends Activity {
                 if (TextUtils.isEmpty(charSequence.toString().trim()))
                     listView.clearTextFilter(); //搜索文本为空时，清除ListView的过滤
                 else
-                    //listView.setFilterText(charSequence.toString().trim()); //设置过滤关键字，有浮窗且不消失，改用下面的方法
                     adapter.getFilter().filter(charSequence.toString().trim());
             }
 
@@ -128,8 +128,6 @@ public class MainActivity extends Activity {
         menu.add(0, 0, 0, "退出");
         menu.add(0, 1, 1, "关于");
         menu.add(0, 2, 2, "更新日志");
-        //menu.add(0, 3, 3, "列表");
-        //menu.add(0, 4, 4, "折线图");
         return true;
     }
 
@@ -141,28 +139,60 @@ public class MainActivity extends Activity {
                 finish();
                 break;
             case 1:
-                new AlertDialog.Builder(this).setIcon(R.mipmap.ic_launcher).setTitle("海天鹰应用分享 V1.2")
-                        .setMessage("获取应用列表，分享发送安装包。\n作者：黄颖\nQQ: 84429027\n\n参考：\n获取应用信息：https://www.cnblogs.com/jiuyi/p/5983304.html，http://blog.csdn.net/lishuangling21/article/details/50789715\nlistView过滤：http://blog.csdn.net/zml_2015/article/details/52082174")
-                        .setPositiveButton("确定", null).show();
+                new AlertDialog.Builder(this).setIcon(R.mipmap.ic_launcher).setTitle("海天鹰应用分享 V1.3").setMessage("获取应用列表，分享发送安装包。\n作者：黄颖\nQQ: 84429027\n\n参考：\n获取应用信息：https://www.cnblogs.com/jiuyi/p/5983304.html，http://blog.csdn.net/lishuangling21/article/details/50789715\nListView过滤：http://blog.csdn.net/zml_2015/article/details/52082174").setPositiveButton("确定", null).show();
                 break;
             case 2:
-                new AlertDialog.Builder(this)
-                        .setIcon(R.mipmap.ic_launcher)
-                        .setTitle("更新日志")
-                        .setMessage(
-                                "V1.2 (2018-01-23)\n修复过滤后分享APP路径不对的问题。\n改动：点击启动应用，长按分享应用。\n\nV1.1 (2018-01-09)\n增加过滤功能。\n\nV1.0 (2018-01-01)\n获取应用列表，分享发送安装包。")
-                        .setPositiveButton("确定", null).show();
-                break;
-            case 3:
-                //startActivity(new Intent(MainActivity.this, BatteryRecord.class));
-                break;
-            case 4:
-//                Intent intent = new Intent(MainActivity.this, BatteryCanvas.class);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
+                new AlertDialog.Builder(this).setIcon(R.mipmap.ic_launcher).setTitle("更新日志").setMessage("V1.3 (2018-10-01)\n过滤不区分大小写。\n在子线程中读取包列表，避免主线程阻塞，并增加进度条。\n\nV1.2 (2018-01-23)\n修复过滤后分享APP路径不对的问题。\n改动：点击启动应用，长按分享应用。\n\nV1.1 (2018-01-09)\n增加过滤功能。\n\nV1.0 (2018-01-01)\n获取应用列表，分享发送安装包。").setPositiveButton("确定", null).show();
                 break;
         }
         return true;
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            for (PackageInfo packageInfo : packages) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.setProgress(i);
+                        //progressDialog.setMessage("读取 " + i + " / " + packages.size());
+                    }
+                });
+                Drawable icon = packageInfo.applicationInfo.loadIcon(PM);   // 获得应用的图标
+                String appLabel = (String) packageInfo.applicationInfo.loadLabel(PM);   // 获得应用的Label
+                String pkgName = packageInfo.packageName;   // 获得应用的包名
+                String sourceDir = packageInfo.applicationInfo.sourceDir; // 获得应用的路径
+                File file = new File(sourceDir);    //获取到应用安装包大小
+                String pkgSize = Formatter.formatFileSize(MainActivity.this, file.length());
+                AppInfo appInfo = new AppInfo();
+                appInfo.setAppIcon(icon);
+                appInfo.setAppLabel(appLabel);
+                appInfo.setPkgName(pkgName);
+                appInfo.setSourceDir(sourceDir);
+                appInfo.setPkgSize(pkgSize);
+                listAppInfo.add(appInfo);
+                i++;
+            }
+            adapter = new AppInfoAdapter(MainActivity.this, listAppInfo);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    listView.setAdapter(adapter);
+                    progressDialog.dismiss();
+                }
+            });
+        }
+    });
 
 }
