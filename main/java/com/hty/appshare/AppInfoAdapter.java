@@ -12,14 +12,19 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AppInfoAdapter extends BaseAdapter implements Filterable {
 
     Context context;
     List<AppInfo> data, data0;
     MyFilter mFilter;
+    SimpleDateFormat dateFormatY = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm", Locale.getDefault());
 
     public AppInfoAdapter(Context context, List<AppInfo> data) {
         this.context = context;
@@ -44,8 +49,8 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public View getView(int position, View convertview, ViewGroup parent) {
-        View view = null;
-        ViewHolder holder = null;
+        View view;
+        ViewHolder holder;
         if (convertview == null || convertview.getTag() == null) {
             view = LayoutInflater.from(context).inflate(R.layout.item_app, null);
             holder = new ViewHolder(view);
@@ -60,6 +65,14 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable {
         holder.textViewPkgName.setText(appInfo.getPkgName());
         holder.textViewPkgSize.setText(appInfo.getPkgSize());
         holder.textViewSourceDir.setText(appInfo.getSourceDir());
+        Date date = new Date(appInfo.getLastUpdateTime());
+        Date now = new Date();
+        Date date1 = new Date(now.getYear(), 0, 1);
+        if(date.getTime() >= date1.getTime()) {
+            holder.textViewLastUpdateTime.setText(dateFormat.format(date));
+        }else {
+            holder.textViewLastUpdateTime.setText(dateFormatY.format(date));
+        }
         return view;
     }
 
@@ -69,6 +82,7 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable {
         TextView textViewPkgName;
         TextView textViewPkgSize;
         TextView textViewSourceDir;
+        TextView textViewLastUpdateTime;
 
         public ViewHolder(View view) {
             this.appIcon = (ImageView) view.findViewById(R.id.imageView);
@@ -76,6 +90,7 @@ public class AppInfoAdapter extends BaseAdapter implements Filterable {
             this.textViewPkgName = (TextView) view.findViewById(R.id.textViewPkgName);
             this.textViewPkgSize = (TextView) view.findViewById(R.id.textViewPkgSize);
             this.textViewSourceDir = (TextView) view.findViewById(R.id.textViewSourceDir);
+            this.textViewLastUpdateTime = (TextView)view.findViewById(R.id.textViewLastUpdateTime);
         }
     }
 

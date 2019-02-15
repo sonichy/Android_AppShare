@@ -4,11 +4,12 @@ import android.graphics.drawable.Drawable;
 
 public class AppInfo {
 
-    private Drawable appIcon ;  //应用程序图像
-    private String appLabel;    //应用程序标签
-    private String pkgName ;    //应用程序所对应的包名
-    private String sourceDir;   //安装包路径
-    private String pkgSize;        //安装包大小
+    private Drawable appIcon;       //应用图像
+    private String appLabel;        //应用标签
+    private String pkgName ;        //应用包名
+    private String sourceDir;       //包路径
+    private String pkgSize;         //包大小
+    private long lastUpdateTime;  //应用更新时间
 
     public AppInfo() {
 
@@ -52,6 +53,14 @@ public class AppInfo {
 
     public String getPkgSize() {
         return pkgSize;
+    }
+
+    public void setLastUpdateTime(long lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public long getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
 }

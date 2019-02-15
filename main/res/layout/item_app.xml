@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="7"
+        android:adjustViewBounds="false"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
+        android:scaleType="fitCenter"
         android:src="@android:drawable/sym_def_app_icon"/>
 
     <LinearLayout
@@ -29,7 +31,8 @@
             android:id="@+id/textViewPkgName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="PkgName"/>
+            android:text="PkgName"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/textViewPkgSize"
@@ -42,7 +45,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="SourceDir"
-            android:visibility="invisible"/>
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/textViewLastUpdateTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UpdateTime"/>
 
     </LinearLayout>
 
